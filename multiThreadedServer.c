@@ -7,8 +7,23 @@
 
 void* doGreeting(void* arg); 
 // global (shared and specific) data 
-int sharedData = 5; 
-char sampleArray[2] = {'a','b'}; 
+
+//getting user input of filename
+char userInput;
+char userFile = ("Please input a file name: ");
+scanf("%s", &userInput);
+
+//spawning child
+pid = fork()
+write(fd[1], &userInput, sizeof(int));
+
+//repeating input and spawn process
+char userInput;
+char userFile = ("Please input a file name: ");
+scanf("%s", &userInput);
+
+//int sharedData = 5; 
+//char sampleArray[2] = {'a','b'}; 
 
 int main() { 
     pthread_t thread1, thread2; 
