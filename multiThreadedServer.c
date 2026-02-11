@@ -4,63 +4,88 @@
 #include <unistd.h> 
 #include <stdlib.h> 
 #include <string.h> 
+#include <time.h>
+#include <signal.h>
 
 void* doGreeting(void* arg); 
+void handleSigint(int sig);
 // global (shared and specific) data 
+volatile sig_atomic_t shutdown_requested = 0;
 
-//getting user input of filename
-char userInput;
-char userFile = ("Please input a file name: ");
-scanf("%s", &userInput);
-
-//spawning child
-pid = fork()
-write(fd[1], &userInput, sizeof(int));
-
-//repeating input and spawn process
-char userInput;
-char userFile = ("Please input a file name: ");
-scanf("%s", &userInput);
-
-//int sharedData = 5; 
 //char sampleArray[2] = {'a','b'}; 
 
+void handleSigint(int sig) {
+    // printf("%d", numberOfFiles);
+    shutdown_requested = 1;
+}
+
 int main() { 
-    pthread_t thread1, thread2; 
-    void *result1, *result2; 
-    int threadStatus1, threadStatus2; 
-    int joinStatus1, joinStatus2; 
-    threadStatus1 = pthread_create (&thread1, NULL,  doGreeting, &sampleArray[0]); 
-    if (threadStatus1 != 0){ 
-        fprintf (stderr, "Thread create error %d: %s\n", threadStatus1, strerror(threadStatus1)); 
-        exit (1); 
+    pthread_t thread1[500]; 
+    // void *result1; 
+    int threadStatus1; 
+    int joinStatus1;
+
+    int numberOfFiles = 0; 
+    char userFile[500];  // buffer
+    srand(time(NULL));
+
+    signal(SIGINT, handleSigint);
+
+    while(shutdown_requested != 1) {
+        //getting user input of filename
+        printf("Please input a file name: "); 
+        if (fgets(userFile, 500, stdin) == NULL) {
+            break;
+            
+        }
+        numberOfFiles ++;
+        userFile[strcspn(userFile, "\n")] = '\0'; 
+        char *fileName = malloc(strlen(userFile) + 1);
+        if (!fileName) {
+            perror("malloc failed.");
+            continue;
+        } 
+        // char userFile = ("Please input a file name: ");
+        // scanf("%s", &userInput);
+
+        //spawning child Just use the pthread_create()
+
+        //repeating input and spawn process NEED loop aka multiple and rapid
+        // char userInput;
+        // char userFile = ("Please input a file name: ");
+        // scanf("%s", &userInput);
+    
+        threadStatus1 = pthread_create (&thread1[numberOfFiles], NULL,  doGreeting, &userFile[0]); 
+        if (threadStatus1 != 0){ 
+            fprintf (stderr, "Thread create error %d: %s\n", threadStatus1, strerror(threadStatus1)); 
+            exit (1); 
+        } 
+    }
+    // printf ("Parent sees %d\n", sharedData); 
+    // sharedData++; 
+    
+    // printf ("Parent sees %d\n", sharedData);
+    for(int i = 0; i < numberOfFiles; i++) {
+        joinStatus1 = pthread_join(thread1[i], NULL); 
+        if (joinStatus1 != 0) { 
+            fprintf (stderr, "Join error %d: %s\n", joinStatus1, strerror(joinStatus1)); 
+            exit (1); 
+        } 
     } 
-    threadStatus2 = pthread_create(&thread2, NULL, doGreeting, &sampleArray[1]); 
-    if (threadStatus2 != 0) { 
-        fprintf (stderr, "thread create error %d: %s\n", threadStatus2, strerror(threadStatus2)); 
-        exit (1); 
-    } 
-    printf ("Parent sees %d\n", sharedData); 
-    sharedData++; 
-    joinStatus1 = pthread_join(thread1, &result1); 
-    if (joinStatus1 != 0) { 
-        fprintf (stderr, "Join error %d: %s\n", joinStatus1, strerror(joinStatus1)); 
-        exit (1); 
-    } 
-    joinStatus2 = pthread_join(thread2, &result2); 
-    if (joinStatus2 != 0) { 
-        fprintf (stderr, "Join error %d: %s\n", joinStatus2, strerror(joinStatus2)); 
-        exit (1); 
-    } 
-    printf ("Parent sees %d\n", sharedData); 
     return 0; 
 } 
 void* doGreeting(void* myArgument) { 
-    char *myPtr = (char *)myArgument; 
-    printf ("Child receiving %c initially sees %d\n", *myPtr, sharedData); 
-    sleep(1); 
-    sharedData++; 
-    printf ("Child receiving %c now sees %d\n", *myPtr, sharedData); 
+    char *myPtr[500] = {(char *)myArgument}; 
+    // printf ("Child receiving %c initially sees %d\n", *myPtr, sharedData); 
+    int probability = rand() % 100;
+    if (probability < 80) {
+        sleep(1);
+    }
+    else {
+        int randomNumber = (rand() % 4) + 7;
+        sleep(randomNumber);
+    }
+    printf ("Child receiving %s now sees\n", *myPtr); 
     return NULL; 
 }
 
