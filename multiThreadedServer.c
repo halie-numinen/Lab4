@@ -8,20 +8,14 @@
 #include <signal.h>
 
 void* doGreeting(void* arg); 
-// void handleSigint(int sig);
-// global (shared and specific) data 
 volatile sig_atomic_t shutdown_requested = 0;
 
-//char sampleArray[2] = {'a','b'}; 
-
 void handleSigint(int sig) {
-    // printf("%d", numberOfFiles);
     shutdown_requested = 1;
 }
 
 int main() { 
-    pthread_t thread1[500]; 
-    // void *result1; 
+    pthread_t thread1[500];  
     int threadStatus1; 
 
     int numberOfFiles = 0; 
@@ -45,15 +39,6 @@ int main() {
             continue;
         } 
         strcpy(fileName, userFile);
-        // char userFile = ("Please input a file name: ");
-        // scanf("%s", &userInput);
-
-        //spawning child Just use the pthread_create()
-
-        //repeating input and spawn process NEED loop aka multiple and rapid
-        // char userInput;
-        // char userFile = ("Please input a file name: ");
-        // scanf("%s", &userInput);
     
         threadStatus1 = pthread_create (&thread1[numberOfFiles], NULL,  doGreeting, fileName); 
         if (threadStatus1 != 0){ 
@@ -74,7 +59,6 @@ int main() {
 } 
 void* doGreeting(void* myArgument) { 
     char *myPtr = (char *)myArgument; 
-    // printf ("Child receiving %c initially sees %d\n", *myPtr, sharedData); 
     int probability = rand() % 100;
     if (probability < 80) {
         sleep(1);
